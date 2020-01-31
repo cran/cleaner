@@ -126,7 +126,7 @@ format.percentage <- function(x, digits = NULL, ...) {
   }
   x_formatted <- format(as.double(x) * 100, scientific = FALSE, digits = digits, nsmall = digits, ...)
   x_formatted <- paste0(x_formatted, "%")
-  x_formatted[!grepl(pattern = "^[0-9.,]+$", x = x)] <- NA_character_
+  x_formatted[!grepl(pattern = "^[0-9.,e-]+$", x = x)] <- NA_character_
   x_formatted
 }
 
@@ -192,6 +192,7 @@ pillar_shaft.percentage <- function (x, ...) {
 #' @rdname percentage
 #' @export
 percentage <- function(x, digits = NULL, ...) {
+  x <- as.double(x)
   if (is.null(digits)) {
     digits <- getdecimalplaces(x, minimum = 0, maximum = 1)
   }

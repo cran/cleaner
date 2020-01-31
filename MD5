@@ -1,13 +1,13 @@
-8dea739b7ce90417a82c4f5aeaf56974 *DESCRIPTION
+ae35be2d52f185a61d1ea7088f9b1f24 *DESCRIPTION
 15b732552148f96fb98f42bfdc8183ec *NAMESPACE
-aa9543e802720a0e5ff4a5cc93a77f90 *NEWS.md
+ee76a5008b34a40542da8f5009fb9e00 *NEWS.md
 9ae9d12a60137e5c14940d1d30b3a419 *R/clean.R
 36344e096d6ae7a2d9eae3fd549b53a4 *R/currency.R
 da8eefb983c34dede45540c20d89ba60 *R/data.R
 62afea6886f7d1ed667ab7988cc5932a *R/format_datetime.R
 e59972b4ce9d742df4a7d3b6917b9108 *R/freq.R
-f84fcbe8ee9b7431a48b91e4edeb8286 *R/helpers.R
-05fdb7aedcdce94226f3037b2c295248 *R/percentage.R
+7d70879ce106de032abeb19bdd5a43d7 *R/helpers.R
+e28b7ce6e288fea3780352aaaffef344 *R/percentage.R
 7b931f3ad4775499b612c42dd09c8078 *R/regex_true_false.R
 e1076f1c938e5caddaa0c2ee26e3c5f4 *README.md
 9f5747938d9f6c761dc5ed2d5f4c8491 *data/unclean.rda
