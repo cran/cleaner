@@ -17,8 +17,27 @@
 # useful, but it comes WITHOUT ANY WARRANTY OR LIABILITY.              #
 # ==================================================================== #
 
-context("currency.R")
-
-test_that("currency works", {
-  expect_true(is.currency(clean_currency(c("no5538", "no929", "yes2390", "no841", "no2610"))))
-})
+#' Generate random dates
+#' 
+#' This function provides random date generation with a specified range, that defaults to the beginning and end of the current year.
+#' @inheritParams stats::runif
+#' @param min,max lower and upper limits of the distribution. Must be (coercible to) valid dates.
+#' @param ... parameters given to \code{as.Date()} for coercing the values of \code{min} and \code{max}
+#' @export
+#' @examples 
+#' # generate a million random dates and check the distribution
+#' hist(rdate(1000000), breaks = "months")
+rdate <- function(n,
+                  min = paste0(format(Sys.Date(), "%Y"), "-01-01"),
+                  max = paste0(format(Sys.Date(), "%Y"), "-12-31"),
+                  ...) {
+  tryCatch({
+    min <- as.Date(min, ...)
+    max <- as.Date(max, ...)
+  }, error = function(e) {
+    stop("Both 'min' and 'max' must be coercible to valid dates. Note: ", e$message)
+  })
+  sample(seq.Date(min, max, by = "day"),
+         size = ifelse(length(n) == 1, n, length(n)),
+         replace = TRUE)
+}

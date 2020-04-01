@@ -23,17 +23,21 @@
 #' @param x data to clean
 #' @param true \link[base]{regex} to interpret values as \code{TRUE} (which defaults to \code{\link{regex_true}}), see Details
 #' @param false \link[base]{regex} to interpret values as \code{FALSE} (which defaults to \code{\link{regex_false}}), see Details
-#' @param na  \link[base]{regex} to force interpret values as \code{NA}, i.e. not as \code{TRUE} or \code{FALSE}
+#' @param na \link[base]{regex} to force interpret values as \code{NA}, i.e. not as \code{TRUE} or \code{FALSE}
 #' @param remove \link[base]{regex} to define the character(s) that should be removed, see Details
 #' @param levels new factor levels, may be named with regular expressions to match existing values, see Details
 #' @param droplevels logical to indicate whether non-existing factor levels should be dropped
 #' @param ordered logical to indicate whether the factor levels should be ordered
 #' @param fixed logical to indicate whether regular expressions should be turned off
-#' @param trim logical to indicate whether the result should be trimmed with \code{\link{trimws}(x, which = "both")}
+#' @param trim logical to indicate whether the result should be trimmed with \code{\link{trimws}(..., which = "both")}
 #' @param ignore.case logical to indicate whether matching should be case-insensitive
 #' @param format a date format that will be passed on to \code{\link{format_datetime}}, see Details
 #' @param currency_symbol the currency symbol to use, which will be guessed based on the input and otherwise defaults to the current system locale setting (see \code{\link{Sys.localeconv}})
 #' @param guess_each logical to indicate whether all items of \code{x} should be guessed one by one, see Examples
+#' @param max_date date to indicate to maximum allowed of \code{x}, which defaults to today. This is to prevent that \code{clean_Date("23-03-47")} will return 23 March 2047 and instead returns 23 March 1947 with a warning.
+#' @param format character string giving a date-time format as used by \link[base]{strptime}. 
+#' 
+#' For \code{clean_Date(..., guess_each = TRUE)}, this can be a vector of values to be used for guessing, see Examples.
 #' @param ... for \code{clean_Date} and \code{clean_POSIXct}: other parameters passed on these functions
 #' @inheritParams base::as.POSIXct
 #' @details
@@ -53,11 +57,11 @@
 #' 
 #' The use of invalid regular expressions in any of the above functions will not return an error (like in base R), but will instead interpret the expression as a fixed value and will throw a warning.
 #' @rdname clean
-#' @return The \code{clean} functions \strong{always} return the class from the function name:
+#' @return The \code{clean_*} functions \strong{always} return the class from the function name:
 #' \itemize{
 #'   \item{\code{clean_logical()}: class \code{logical}}
 #'   \item{\code{clean_factor()}: class \code{factor}}
-#'   \item{\code{clean_numeric()} & \code{clean_double()}: class \code{numeric}}
+#'   \item{\code{clean_numeric()} and \code{clean_double()}: class \code{numeric}}
 #'   \item{\code{clean_integer()}: class \code{integer}}
 #'   \item{\code{clean_character()}: class \code{character}}
 #'   \item{\code{clean_percentage()}: class \code{percentage}}
@@ -88,6 +92,9 @@
 #' clean_Date("14526", "Excel")
 #' clean_Date(c("1 Oct 13", "October 1st 2012")) # could not be fitted in 1 format
 #' clean_Date(c("1 Oct 13", "October 1st 2012"), guess_each = TRUE)
+#' clean_Date(c("12-14-13", "1 Oct 2012"), 
+#'            guess_each = TRUE,
+#'            format = c("d mmm yyyy", "mm-yy-dd")) # only these formats will be tried
 #' 
 #' clean_POSIXct("Created log on 2020/02/11 11:23 by user Joe")
 #' clean_POSIXct("Created log on 2020.02.11 11:23 by user Joe", tz = "UTC")
@@ -125,7 +132,7 @@ clean.default <- function(x, ...) {
   x_withoutNA <- x[!is.na(x)]
   fns <- c("Date", "percentage", "numeric", "logical", "character")
   n_valid <- integer(length(fns))
-  for (i in 1:length(fns)) {
+  for (i in seq_len(length(fns))) {
     fn <- get(paste0("clean_", fns[i]), envir = asNamespace("cleaner"))
     n_valid[i] <- sum(!is.na(suppressWarnings(suppressMessages(fn(x_withoutNA)))))
   }
@@ -187,7 +194,7 @@ clean_factor <- function(x, levels = unique(x), ordered = FALSE, droplevels = FA
     levels_nchar <- levels[rev(order(nchar(levels)))]
     new_x <- rep(NA_character_, length(x))
     # fill in levels
-    for (i in 1:length(levels_nchar)) {
+    for (i in seq_len(length(levels_nchar))) {
       # first try exact match
       tryCatch(new_x[is.na(new_x) & x == levels_nchar[i]] <- levels_nchar[i], error = function(e) invisible())
       # then regular expressions
@@ -196,7 +203,7 @@ clean_factor <- function(x, levels = unique(x), ordered = FALSE, droplevels = FA
     if (!is.null(names(levels))) {
       # override named levels
       x_set_with_name <- logical(length(x))
-      for (i in 1:length(levels)) {
+      for (i in seq_len(length(levels))) {
         if (names(levels)[i] != "") {
           new_x[grepl_warn_on_error(names(levels)[i], x, ignore.case = ignore.case, fixed = fixed) & x_set_with_name == FALSE] <- levels[i]
           x_set_with_name[grepl_warn_on_error(names(levels)[i], x, ignore.case = ignore.case, fixed = fixed)] <- TRUE
@@ -297,7 +304,8 @@ clean_currency <- function(x, currency_symbol = NULL, remove = "[^0-9.,-]", fixe
   } else {
     currency_symbol <- trimws(Sys.localeconv()["int_curr_symbol"])
   }
-  as.currency(clean_numeric(x = x, remove = remove, fixed = fixed), currency_symbol = currency_symbol)
+  as.currency(clean_numeric(x = x, remove = remove, fixed = fixed),
+              currency_symbol = currency_symbol)
 }
 
 #' @rdname clean
@@ -305,7 +313,7 @@ clean_currency <- function(x, currency_symbol = NULL, remove = "[^0-9.,-]", fixe
 clean_percentage <- function(x, remove = "[^0-9.,-]", fixed = FALSE) {
   x_clean <- clean_numeric(x = x, remove = remove, fixed = fixed)
   x_tested <- logical(length(x))
-  for (i in 1:length(x)) {
+  for (i in seq_len(length(x))) {
     x_tested[i] <- grepl(pattern = paste0(x_clean[i], ".?(%|percent|pct)"),
                          x = x[i], ignore.case = TRUE) |
       grepl(pattern = "(percent|pct)",
@@ -320,26 +328,106 @@ clean_percentage <- function(x, remove = "[^0-9.,-]", fixed = FALSE) {
   }
 }
 
+#' @rdname clean
+#' @export
+clean_Date <- function(x, format = NULL, guess_each = FALSE, max_date = Sys.Date(), ...) {
+
+  if (is.Date(x)) {
+    # could also be POSIX, or just Date
+    return(as.Date(x))
+  }
+  
+  if (!is.Date(max_date) & !is.infinite(max_date)) {
+    max_date <- suppressWarnings(suppressMessages(clean_Date(max_date)))
+    if (is.na(max_date)) {
+      stop("`max_date` must be a date.")
+    }
+  }
+  
+  if (is.double(x)) {
+    x <- as.integer(x)
+  }
+  
+  if (!is.null(format) & length(format) == 1) {
+    if (tolower(format) == "excel") {
+      final_result <- as.Date(as.numeric(x), origin = "1899-12-30")
+    } else {
+      final_result <- as.Date(x = x, format = format_datetime(format), ...)
+    }
+  } else {
+    if (guess_each == FALSE) {
+      final_result <- guess_Date(x = x, throw_note = TRUE)
+    } else {
+      if (length(format) > 1) {
+        # checking date according to set vector of format options
+        x_coerced <- rep(NA_character_, length(x))
+        n_coerced <- 0
+        for (i in seq_len(length(format))) {
+          x_coerced[is.na(x_coerced)] <- tryCatch(as.Date(x = as.character(x[is.na(x_coerced)]),
+                                                          format = format_datetime(format[i])),
+                                                  warning = function(w) NA_character_,
+                                                  error = function(e) NA_character_)
+          message("(format '", format[i], "' used for ", length(x_coerced[!is.na(x_coerced)]) - n_coerced, " items)")
+          n_coerced <- length(x_coerced[!is.na(x_coerced)])
+        }
+        final_result <- as.Date(as.double(x_coerced), origin = "1970-01-01")
+      } else {
+        final_result <- as.Date(unname(sapply(x, guess_Date, throw_note = FALSE, format = format)), origin = "1970-01-01")
+      }
+    }
+  }
+  
+  tryCatch({
+    time_lt <- as.POSIXlt(final_result)
+    time_lt[final_result > max_date]$year <- time_lt[final_result > max_date]$year - 100
+    x <- as.Date(time_lt)
+    if (any(year(final_result) != year(x), na.rm = TRUE)) {
+      warning("Some years were decreased by 100 to not exceed ", 
+              ifelse(max_date == Sys.Date(), "today", format(max_date, format_datetime("d mmmm yyyy"))), 
+              ". Use clean_Date(..., max_date = Inf) to prevent this.", call. = FALSE)
+    }
+  },
+  error = function(e) x <<- final_result)
+  
+  x
+}
 
 #' @rdname clean
 #' @export
-clean_Date <- function(x, format = NULL, guess_each = FALSE, ...) {
-  if (!is.null(format)) {
-    if (tolower(format) == "excel") {
-      return(as.Date(as.numeric(x), origin = "1899-12-30"))
-    } else {
-      return(as.Date(x = x, format = format_datetime(format), ...))
+clean_POSIXct <- function(x, tz = "", remove = "[^.0-9 :/-]", fixed = FALSE, max_date = Sys.Date(), ...) {
+  if (is.Date(x)) {
+    # could also be POSIX, or just Date
+    return(as.POSIXct(x))
+  }
+  
+  if (!is.Date(max_date) & !is.infinite(max_date)) {
+    max_date <- suppressWarnings(suppressMessages(clean_Date(max_date)))
+    if (is.na(max_date)) {
+      stop("`max_date` must be a date.")
     }
   }
+  
+  x <- trimws(gsub_warn_on_error(remove, "", x, ignore.case = TRUE, fixed = fixed))
+  x <- gsub("[\\./]", "-", x)
+  
+  tryCatch({
+    time_ct <- tryCatch(as.POSIXct(x, tz = tz, ...),
+                        error = function(e) clean_Date(x))
+    time_lt <- as.POSIXlt(time_ct, tz = tz)
+    time_lt[time_ct > max_date]$year <- time_lt[time_ct > max_date]$year - 100
+    x <- as.POSIXct(time_lt, tz = tz, ...)
+    if (any(year(time_ct) != year(x), na.rm = TRUE)) {
+      warning("Some years were decreased by 100 to not exceed ", 
+              ifelse(max_date == Sys.Date(), "today", format(max_date, format_datetime("d mmmm yyyy"))), 
+              ". Use clean_Date(..., max_date = Inf) to prevent this.", call. = FALSE)
+    }
+  },
+  error = function(e) x <<- time_ct)
 
-  if (guess_each == FALSE) {
-    guess_Date(x = x, throw_note = TRUE)
-  } else {
-    as.Date(unname(sapply(x, guess_Date, throw_note = FALSE)), origin = "1970-01-01")
-  }
+  as.POSIXct(x)
 }
 
-guess_Date <- function(x, throw_note = TRUE) {
+guess_Date <- function(x, throw_note = TRUE, format_options = NULL) {
   msg_clean_as <- function(format_set, sep = " ") {
     if (throw_note == TRUE) {
       if (tolower(format_set) == "excel") {
@@ -349,7 +437,7 @@ guess_Date <- function(x, throw_note = TRUE) {
       }
     }
   }
-  
+
   x_numeric <- suppressWarnings(as.numeric(x))
   if (all(x_numeric %in% c(as.integer(as.Date("1970-01-01") - as.Date("1899-12-30")):as.integer(Sys.Date() - as.Date("1899-12-30"))), na.rm = TRUE)) {
     # is Excel date
@@ -418,7 +506,7 @@ guess_Date <- function(x, throw_note = TRUE) {
     format_spaced <- format
     # remove spaces from the format too, it was already removed from input
     format <- gsub(" ", "", format)
-    for (i in 1:length(format)) {
+    for (i in seq_len(length(format))) {
       validated_dates <- suppressWarnings(as.Date(as.character(x_withoutNAs), 
                                                   format = format_datetime(format[i])))
       if (all(!is.na(validated_dates))
@@ -460,12 +548,4 @@ guess_Date <- function(x, throw_note = TRUE) {
   }
   warning("Date/time format could not be determined automatically, returning NAs", call. = FALSE)
   as.Date(rep(NA, length(x)))
-}
-
-#' @rdname clean
-#' @export
-clean_POSIXct <- function(x, tz = "", remove = "[^.0-9 :/-]", fixed = FALSE, ...) {
-  x <- trimws(gsub_warn_on_error(remove, "", x, ignore.case = TRUE, fixed = fixed))
-  x <- gsub("[\\./]", "-", x)
-  as.POSIXct(x, tz = tz, ...)
 }

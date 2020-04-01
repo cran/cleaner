@@ -17,8 +17,18 @@
 # useful, but it comes WITHOUT ANY WARRANTY OR LIABILITY.              #
 # ==================================================================== #
 
-context("currency.R")
+context("is.Date.R")
 
-test_that("currency works", {
-  expect_true(is.currency(clean_currency(c("no5538", "no929", "yes2390", "no841", "no2610"))))
+test_that("Date checking works", {
+  randomised <- rdate(5000)
+  expect_identical(
+    sort(as.vector(freq(randomised))), # as.vector.freq contains a date check
+    sort(randomised)
+  )
+})
+
+test_that("random date generation works", {
+  expect_error(rdate(42, -1))
+  expect_length(rdate(42), 42)
+  expect_length(rdate(c(42, 42)), 2)
 })

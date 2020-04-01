@@ -1,3 +1,37 @@
+# cleaner 1.4.0
+
+* New function `rdate()` to generate random dates (in analogy to e.g. `runif()`)
+* Frequency tables (`freq()`):
+  * Added availability of data to header
+  * Fix for using `na.rm`
+  * Fix for transforming to a visual histogram with `hist()`
+  * New method for using `format()` on a frequency table
+  * New method for transforming the values of a frequency table to a vector with `as.vector()`, which also supports dates
+    ```r
+    library(dplyr)
+    library(cleaner)
+    data.frame(dates = rdate(100)) %>% 
+      freq(dates) %>% 
+      as.vector()
+    ```
+* Fix for `clean_Date()` not accepting already `POSIX` or `Date` input 
+* When using `clean_Date(..., guess_each = TRUE)` it now accepts the `format` parameter as a vector of options to let it choose from
+* `clean_Date()` and `clean_POSIXct` gained a parameter `max_date` (that defaults to today), so that they will never return years beyond a specified date:
+  ```r
+  # old
+  clean_Date("23-01-67")
+  #> [1] "2067-01-23"
+  
+  # new
+  clean_Date("23-01-67")
+  #> [1] "1967-01-23"
+  #> Warning: Some years were decreased by 100 to not exceed today.
+  #>          Use clean_Date(..., max_date = Inf) to prevent this.
+  clean_Date("23-01-67", max_date = Inf)
+  #> [1] "2067-01-23"
+  ```
+* Cleaned all code using the `lintr` package
+
 # cleaner 1.3.1
 
 * Fixed a bug when using a `percentage` class into the `percentage()` function, i.e. `percentage(as.percentage(1))` would fail
