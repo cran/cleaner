@@ -17,18 +17,6 @@
 # useful, but it comes WITHOUT ANY WARRANTY OR LIABILITY.              #
 # ==================================================================== #
 
-context("is.Date.R")
-
-test_that("Date checking works", {
-  randomised <- rdate(5000)
-  expect_identical(
-    sort(as.vector(freq(randomised))), # as.vector.freq contains a date check
-    sort(randomised)
-  )
-})
-
-test_that("random date generation works", {
-  expect_error(rdate(42, -1))
-  expect_length(rdate(42), 42)
-  expect_length(rdate(c(42, 42)), 2)
-})
+.onLoad <- function(libname, pkgname) {
+  backports::import(pkgname)
+}
