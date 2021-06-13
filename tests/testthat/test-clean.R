@@ -6,7 +6,7 @@
 # https://github.com/msberends/cleaner                                 #
 #                                                                      #
 # LICENCE                                                              #
-# (c) 2020 Berends MS (m.s.berends@umcg.nl)                            #
+# (c) 2021 Berends MS (m.s.berends@umcg.nl)                            #
 #                                                                      #
 # This R package is free software; you can freely use and distribute   #
 # it for both personal and commercial purposes under the terms of the  #
@@ -20,6 +20,8 @@
 context("clean.R")
 
 test_that("cleaning works", {
+  skip_on_cran()
+
   expect_equal(clean_logical(c("Yes", "No", "Invalid", "Unknown")),
                c(TRUE, FALSE, NA, NA))
   expect_equal(clean_logical(x = c("Positive", "Negative", "Unknown", "Some value"),
