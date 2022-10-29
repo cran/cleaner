@@ -91,13 +91,9 @@ header(f, property = NULL)
 
 \item{sep}{a character string to separate the terms when selecting multiple columns}
 
-\item{decimal.mark}{%
-    used for prettying (longish) numerical and complex sequences.
-    Passed to \code{\link[base]{prettyNum}}: that help page explains the details.}
+\item{decimal.mark}{the character to be used to indicate the numeric decimal point}
 
-\item{big.mark}{%
-    used for prettying (longish) numerical and complex sequences.
-    Passed to \code{\link[base]{prettyNum}}: that help page explains the details.}
+\item{big.mark}{character; if not empty used as mark between every `big.interval` decimals \emph{before} (hence big) the decimal point}
 
 \item{wt}{frequency weights. If a variable, computes \code{sum(wt)} instead of counting the rows.}
 

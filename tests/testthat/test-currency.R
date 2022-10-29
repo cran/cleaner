@@ -1,12 +1,12 @@
 # ==================================================================== #
 # TITLE                                                                #
-# Fast and Easy Data Cleaning                                          #
+# cleaner: Fast and Easy Data Cleaning                                 #
 #                                                                      #
 # SOURCE                                                               #
 # https://github.com/msberends/cleaner                                 #
 #                                                                      #
 # LICENCE                                                              #
-# (c) 2021 Berends MS (m.s.berends@umcg.nl)                            #
+# (c) 2022 Berends MS (m.s.berends@umcg.nl)                            #
 #                                                                      #
 # This R package is free software; you can freely use and distribute   #
 # it for both personal and commercial purposes under the terms of the  #
@@ -21,4 +21,5 @@ context("currency.R")
 
 test_that("currency works", {
   expect_true(is.currency(clean_currency(c("no5538", "no929", "yes2390", "no841", "no2610"))))
+  expect_identical(symb2txt(txt2symb("EUR")), "EUR")
 })

@@ -1,12 +1,12 @@
 # ==================================================================== #
 # TITLE                                                                #
-# Fast and Easy Data Cleaning                                          #
+# cleaner: Fast and Easy Data Cleaning                                 #
 #                                                                      #
 # SOURCE                                                               #
 # https://github.com/msberends/cleaner                                 #
 #                                                                      #
 # LICENCE                                                              #
-# (c) 2021 Berends MS (m.s.berends@umcg.nl)                            #
+# (c) 2022 Berends MS (m.s.berends@umcg.nl)                            #
 #                                                                      #
 # This R package is free software; you can freely use and distribute   #
 # it for both personal and commercial purposes under the terms of the  #
@@ -28,7 +28,9 @@ test_that("Date checking works", {
 })
 
 test_that("random date generation works", {
-  expect_error(rdate(42, -1))
+  if (getRversion() <= "4.2.0") {
+    expect_error(rdate(42, -1))
+  }
   expect_length(rdate(42), 42)
   expect_length(rdate(c(42, 42)), 2)
 })
