@@ -1,7 +1,7 @@
 Package: cleaner
 Title: Fast and Easy Data Cleaning
-Version: 1.5.4
-Date: 2022-10-28
+Version: 1.5.5
+Date: 2024-11-17
 Authors@R: 
   person(
     given = c("Matthijs", "S."),
@@ -23,11 +23,11 @@ BugReports: https://github.com/msberends/cleaner/issues
 License: GPL-2
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.1
+RoxygenNote: 7.3.2
 NeedsCompilation: no
-Packaged: 2022-10-28 13:00:20 UTC; msberends
+Packaged: 2024-11-19 10:33:22 UTC; msberends
 Author: Matthijs S. Berends [aut, cre]
     (<https://orcid.org/0000-0001-7620-1800>)
 Maintainer: Matthijs S. Berends <m.s.berends@umcg.nl>
 Repository: CRAN
-Date/Publication: 2022-10-29 07:50:39 UTC
+Date/Publication: 2024-11-19 10:50:04 UTC
